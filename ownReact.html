@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script>
+    const structure = {
+        type: 'div',
+        props: {
+            children: [
+                {
+                    type: 'h1',
+                    props: {
+                        children: ' this is '
+                    }
+                },
+                {
+                    type: 'p',
+                    props: {
+                        className: 'paragraph',
+                        children: [
+                            "a",
+                            {
+                                type: 'button',
+                                props: {
+                                    children: ' button '
+                                }
+                            },
+                            'from',
+                            {
+                                type: 'a',
+                                props: {
+                                    href: 'codeopen.io',
+                                    children: 'link'
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+
+    const tryCatchDecorator = (func) => (...args) => {
+        try {
+            func(...args)
+        } catch(err) {
+            return
+        }
+    }
+
+    const isTextChildren = (children) => typeof children === 'string'
+    const isArrayChildren = (children) => Array.isArray(children)
+
+    const setNodes = (parent, children) => isArrayChildren(children) ?  setNestedNode(parent, children) : setTextNode(parent, children)
+    const setNestedNode = (parent, children) => children.forEach(item => isTextChildren(item) ? setTextNode(parent, item) : render(item, parent))
+    const setTextNode = (parent, text) =>  parent.appendChild(document.createTextNode(text))
+
+
+
+    const defaultSetAttributes = (parent, value) => {
+        if(!value || Array.isArray(value) || typeof value !== 'object') return
+        Object.entries(value).forEach(([key, value]) => parent.setAttribute(key, value))
+    }
+
+    const defaultRenderStructure = (structure, parent = document.body) => {
+        if(!structure) return
+        const {type, props} = structure
+
+        if(!type || !props) return
+        const {children, ...attr} = props
+
+        const newElement = document.createElement(type)
+
+        setAttributes(newElement, attr)
+        setNodes(newElement, children)
+
+        parent.appendChild(newElement)
+    }
+
+    const tryCatchDecorator = (func) => (...args) => {
+        try {
+            func(...args)
+        } catch(err) {
+            return
+        }
+    }
+
+    const setAttributes = tryCatchDecorator((parent, value) => Object.entries(value).forEach(([key, value]) => parent.setAttribute(key, value)))
+
+    const render = tryCatchDecorator((structure, parent = document.body) => {
+            const {type, props} = structure
+            const {children, ...attr} = props
+
+            const newElement = document.createElement(type)
+
+            setAttributes(newElement, attr)
+            setNodes(newElement, children)
+
+            parent.appendChild(newElement)
+    })
+
+    render(structure)
+</script>
+</body>
+</html>
+
+
+

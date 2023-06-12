@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HorizontalScroll</title>
+    <style type="text/css">
+        *, ::before, ::after {
+            box-sizing: border-box;
+        }
+
+        * {
+            margin: 0;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        .header, .footer, .horizontal-slider {
+            display: flex;
+            height: 100vh;
+        }
+
+        .header {
+            background: red;
+        }
+
+        .footer {
+            background: blue
+        }
+
+        .horizontal-slider {
+            background: deeppink;
+            overflow: hidden;
+        }
+
+        .visible_wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+        }
+        .slider-item {
+            display:flex;
+            border: 1px solid black;
+            min-width: 50%;
+            height: 100%;
+            background: gold;
+        }
+
+    </style>
+</head>
+<body>
+<header class="header"></header>
+<div class="horizontal-slider">
+    <div class="visible_wrapper">
+        <div class="slider-item"></div>
+        <div class="slider-item"></div>
+        <div class="slider-item"></div>
+        <div class="slider-item"></div>
+        <div class="slider-item"></div>
+        <div class="slider-item"></div>
+        <div class="slider-item"></div>
+        <div class="slider-item"></div>
+        <div class="slider-item"></div>
+    </div>
+</div>
+<footer class="footer"></footer>
+<script>
+
+    const HORIZONTAL_SCROLL_STEP = 50
+    const THROTTLE_DELAY = 5
+
+    const horizontalSlider = document.querySelector('.horizontal-slider')
+    const visibleWrapper = horizontalSlider.querySelector('.visible_wrapper')
+    const sliderItems = visibleWrapper.querySelector('.slider-item')
+
+    const sliderWidth = [...sliderItems].reduce(() =>{
+
+    })
+
+    const getTransformX = (str) => {
+        if(str === 'none') return 0
+
+        const matches = [...str.matchAll(/-?\d+/gi)]
+        const xTransform = Number(matches[4])
+
+        return xTransform
+    }
+
+
+    const onScroll = (event) => {
+        const sliderCoordinate = horizontalSlider.getBoundingClientRect()
+        const maxScroll = sliderCoordinate.y + sliderCoordinate.height
+        const transformMatrix = window.getComputedStyle(visibleWrapper).transform
+        const currenTransformX = getTransformX(transformMatrix)
+        const sliderTopRightAngle = sliderCoordinate.x + sliderCoordinate.width
+        console.log('CALC', sliderTopRightAngle - window.innerWidth)
+        console.log('SLIDER COORDINATE', sliderCoordinate)
+        if(sliderCoordinate.y <= 0 ) {
+            event.preventDefault()
+            if(sliderCoordinate.y < 0 ) window.scrollBy(0, sliderCoordinate.y)
+
+            const newTransform = Math.abs(currenTransformX) + HORIZONTAL_SCROLL_STEP > sliderCoordinate.x + sliderCoordinate.width - window.innerWidth ? sliderCoordinate.x + sliderCoordinate.width : Math.abs(currenTransformX) + HORIZONTAL_SCROLL_STEP
+
+            visibleWrapper.style.transform = `translateX(-${newTransform}px)`
+        }
+
+        // visibleWrapper.style.transform = `translateX(${sliderCoordinate.x}px)`
+    }
+
+    const throttle = (func, delay) => {
+        let time
+        return (...args) => {
+            if(!time || Date.now() - time >= delay) {
+                time = Date.now()
+                return func(...args)
+            }
+            if(Date.now() - time <= delay) return
+        }
+    }
+
+    const throttledOnScroll = throttle(onScroll, THROTTLE_DELAY)
+
+    document.addEventListener('scroll', throttledOnScroll)
+
+</script>
+</body>
+</html>

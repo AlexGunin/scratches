@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Title</title>
+    <style>
+      :root {
+        --border-width: 3px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      .container {
+        display: flex;
+        flex-wrap: wrap;
+
+        width: calc(148px - 2 * var(--border-width));
+        height: calc(156px - 2 * var(--border-width));
+
+        border: 3px solid white;
+        outline: 3px solid black;
+      }
+
+      .cell {
+        width: 8px;
+        height: 8px;
+      }
+
+      .black {
+        background: black;
+      }
+
+      .white {
+        background: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container"></div>
+
+    <script>
+      const CELLS_IN_ROW = 17;
+      const ROWS = 18;
+      const amountCells = ROWS * CELLS_IN_ROW;
+      const container = document.querySelector(".container");
+
+      const MAX_NAME_LENGTH = 26;
+
+      const getAsciCode = (letter) => letter.charCodeAt();
+
+      const transformToBinary = (num) => num.toString(2);
+
+      const complementBite = (str) => str.padStart(8, "0");
+
+      const compose = (...fns) =>
+        fns.reduce(
+          (acc, cur) =>
+            (...args) =>
+              cur(acc(...args))
+        );
+
+      const composeToBinary = compose(
+        getAsciCode,
+        transformToBinary,
+        complementBite
+      );
+
+      const roboClone = {
+        sex: "female",
+        id: "c5j818dyo5",
+        name: "Oleg Vladimirovich",
+      };
+
+      const countContentCells = () => amountCells - CELLS_IN_ROW - 1;
+
+      const createBinaryCode = ({ sex, id, name }) => {
+        const nameWithSpaces = name.padEnd(MAX_NAME_LENGTH);
+        const str = id + nameWithSpaces;
+
+        const sexBinary = sex === "female" ? "0" : "1";
+        const contentBinary = createContentBinary(str);
+        const controlInformationBinary = createBinaryControlInformation(
+          sexBinary + contentBinary
+        );
+
+        return sexBinary + contentBinary + controlInformationBinary;
+      };
+
+      const createContentBinary = (str) => {
+        const content = [...str].map(composeToBinary).join("");
+        const contentCells = countContentCells();
+        return content.length >= contentCells
+          ? content.slice(0, contentCells)
+          : content.padEnd(contentCells);
+      };
+
+      const createBinaryControlInformation = (contentBinary) => {
+        let result = "";
+
+        for (let i = 0; i < CELLS_IN_ROW; i++) {
+          const currentCol = [...contentBinary].filter(
+            (_, index) => index % CELLS_IN_ROW === i
+          );
+          const sum = currentCol.reduce((acc, cur) => acc + Number(cur), 0);
+          result += sum % 2 ? "1" : "0";
+        }
+
+        return result;
+      };
+
+      const binaryCode = createBinaryCode(roboClone);
+
+      for (const letter of binaryCode) {
+        const cell = document.createElement("div");
+        const color = letter === "0" ? "white" : "black";
+        cell.classList.add("cell", color);
+        container.appendChild(cell);
+      }
+
+      console.log("BINARY CODE", binaryCode);
+      console.log("SUMMARY LENGTH", binaryCode.length);
+      // На пересечении первой строки и первого столбца контента отрисовывается квадрат, кодирующий пол клона. Значение female кодируется нулём (белый цвет), male — единицей (чёрный цвет).
+      //
+      // Далее из полей id и name формируется строка вида <id><name>. Поле name дополняется пробелами в конце до 26 символов.
+      //
+      //     Полученная строка конвертируется в байтовый массив — каждому символу строки ставится соответствующий ASCII-код (число от 0 до 255).
+      //
+      // Затем каждый элемент полученного массива переводится в двоичную запись (восемь символов 0 или 1) и кодируется последовательностью из восьми квадратов (0 — белый квардрат, 1 — чёрный квадрат). Квадраты отрисовываются в контенте баркода последовательно и построчно.
+      //
+      //     В последней строке контента находится контрольная информация.
+      //
+      //     Алгоритм подсчёта контрольной информации
+      //
+      // Каждый квадрат в строке контрольной информации определяет чётность суммы значений контента в соответствующем столбце. Если сумма нулей и единиц в столбце чётная, то в контрольной информации рисуется белый квадрат, в противном случае — чёрный.
+
+      // sex: string;
+      // /**
+      //  * Идентификатор клона — строка из маленьких и больших
+      //  * латинских букв и цифр, строго 10 символов
+      //  */
+      // id: string;
+      // /**
+      //  * Имя клона — строка из маленьких и больших
+      //  * латинских букв и пробелов (от 0 до 26 символов)
+      //  */
+      // name: string;
+    </script>
+  </body>
+</html>
